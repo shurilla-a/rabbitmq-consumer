@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"runtime"
+	"strconv"
 )
 
 // функция обработки ошибок
@@ -63,16 +64,23 @@ func main() {
 		errorLoger(err, "Failed to open a channel")
 	}
 	defer ch.Close()
+	for i := 1; i <= configReader.QueueCount; i++ {
+		queueName := configReader.QueueName + strconv.Itoa(i)
 
-	queues, err := ch.QueueDeclare(
-		"hello", //name
-		true,    //durable
-		false,   //delete when unused
-		false,   // exclusive
-		false,   // no-wait
-		nil,     //arguments
-	)
-	errorLoger(err, "Failed to declare a queue")
+		queues, err := ch.QueueDeclare(
+			queueName, //name
+			true,      //durable
+			false,     //delete when unused
+			false,     // exclusive
+			false,     // no-wait
+			nil,       //arguments
+		)
+		if err != nil {
+			errorLoger(err, "Failed to declare a queue")
+
+		}
+	}
+
 	msgs, err := ch.Consume(
 		queues.Name,    // очередь
 		"OUT ConSumer", //консумер
