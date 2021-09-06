@@ -2,6 +2,7 @@ package main
 
 import (
 	amqp "github.com/rabbitmq/amqp091-go"
+	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
 	"os"
@@ -33,8 +34,14 @@ type ConfigYmal struct {
 func inConfigParsingYmal(configFile string) (*ConfigYmal, error) {
 	configFileOpen, err := ioutil.ReadFile(configFile)
 	if err != nil {
-		errorLoger(err, msg)
+		errorLoger(err, " НЕ МОГУ НАЙТИ ФАЙЛ КОНФИГУРАЦИИ")
 	}
+	c := &ConfigYmal{}
+	err = yaml.Unmarshal(configFileOpen, c)
+	if err != nil {
+		errorLoger(err, "Cannot Parsing Ymal File")
+	}
+	return c, nil
 }
 
 func main() {
