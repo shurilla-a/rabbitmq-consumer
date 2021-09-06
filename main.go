@@ -47,12 +47,21 @@ func inConfigParsingYmal(configFile string) (*ConfigYmal, error) {
 func main() {
 
 	runtime.GOMAXPROCS(2)
+	configReader, err := inConfigParsingYmal("config.yml")
+	if err != nil {
+		errorLoger(err, "Error Reading Config")
+	}
 
-	conn, err := amqp.Dial("amqp://user:user@172.31.201.78:5672")
-	errorLoger(err, "Filed to connect to RabbitMQ")
+	conn, err := amqp.Dial("amqp://" + configReader.Login + ":" + configReader.Password + "@" + configReader.Host + ":" + configReader.Port)
+	if err != nil {
+		errorLoger(err, "Filed to connect to RabbitMQ")
+	}
 	defer conn.Close()
+
 	ch, err := conn.Channel()
-	errorLoger(err, "Failed to open a channel")
+	if err != nil {
+		errorLoger(err, "Failed to open a channel")
+	}
 	defer ch.Close()
 
 	queues, err := ch.QueueDeclare(
