@@ -1,18 +1,42 @@
 package main
 
 import (
-	"log"
-	"runtime"
-
 	amqp "github.com/rabbitmq/amqp091-go"
+	"io/ioutil"
+	"log"
+	"os"
+	"runtime"
 )
 
-func errorLoger(err error, msg string) {
-
+// функция обработки ошибок
+func errorLoger(errLogreFile error, msgtoErrorLogerFile string) {
+	fileWrite, err := os.OpenFile("error.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
-		log.Fatalf("%s: %s", msg, err)
+		log.Fatalf("Error Open or Read errorLog.log File", err)
+	}
+	log.SetOutput(fileWrite)
+	log.Fatalf("%s:%s", msgtoErrorLogerFile, errLogreFile)
+}
+
+//структура Конфига
+type ConfigYmal struct {
+	Host          string `yaml:"host"`
+	Port          string `yaml:"port"`
+	Login         string `yaml:"login"`
+	Password      string `yaml:"passwd"`
+	QueueName     string `yaml:"queueName"`
+	QueueMessages int    `yaml:"queueMessages"`
+	QueueCount    int    `yaml:"queueCount"`
+}
+
+// функция парсинга Нфьд Файла
+func inConfigParsingYmal(configFile string) (*ConfigYmal, error) {
+	configFileOpen, err := ioutil.ReadFile(configFile)
+	if err != nil {
+		errorLoger(err, msg)
 	}
 }
+
 func main() {
 
 	runtime.GOMAXPROCS(2)
