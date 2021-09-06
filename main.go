@@ -79,19 +79,34 @@ func main() {
 			errorLoger(err, "Failed to declare a queue")
 
 		}
+
+		msgs, err := ch.Consume(
+			queues.Name,    // очередь
+			"OUT ConSumer", //консумер
+			true,           //авто -акк
+			false,          //эксклюзив
+			false,          //не локально
+			false,          // не ждать
+			nil,            //args
+
+		)
+		if err != nil {
+			errorLoger(err, "Failed to register a consumer")
+		}
+
 	}
 
-	msgs, err := ch.Consume(
-		queues.Name,    // очередь
-		"OUT ConSumer", //консумер
-		true,           //авто -акк
-		false,          //эксклюзив
-		false,          //не локально
-		false,          // не ждать
-		nil,            //args
-
-	)
-	errorLoger(err, "Failed to register a consumer")
+	//msgs, err := ch.Consume(
+	//	queues.Name,    // очередь
+	//	"OUT ConSumer", //консумер
+	//	true,           //авто -акк
+	//	false,          //эксклюзив
+	//	false,          //не локально
+	//	false,          // не ждать
+	//	nil,            //args
+	//
+	//)
+	//errorLoger(err, "Failed to register a consumer")
 	forever := make(chan bool)
 	for d := range msgs {
 		log.Printf("Received a message: %s", d.Body)
