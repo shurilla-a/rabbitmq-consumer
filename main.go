@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
@@ -66,51 +67,30 @@ func main() {
 	defer ch.Close()
 	for i := 1; i <= configReader.QueueCount; i++ {
 		queueName := configReader.QueueName + strconv.Itoa(i)
-
-		queues, err := ch.QueueDeclare(
-			queueName, //name
-			true,      //durable
-			false,     //delete when unused
-			false,     // exclusive
-			false,     // no-wait
-			nil,       //arguments
-		)
-		if err != nil {
-			errorLoger(err, "Failed to declare a queue")
-
-		}
-
 		msgs, err := ch.Consume(
-			queues.Name,    // очередь
-			"OUT ConSumer", //консумер
-			true,           //авто -акк
-			false,          //эксклюзив
-			false,          //не локально
-			false,          // не ждать
-			nil,            //args
-
+			queueName,
+			"",
+			true,
+			false,
+			false,
+			false,
+			nil,
 		)
+
 		if err != nil {
-			errorLoger(err, "Failed to register a consumer")
+			errorLoger(err, "ВСЕ пропало!!")
 		}
+		fmt.Println(msgs)
 
-	}
+		forever := make(chan bool)
+		go func() {
+			for d := range msgs {
+				fmt.Printf("Recieved Message: %s\n", d.Body)
+			}
+		}()
 
-	//msgs, err := ch.Consume(
-	//	queues.Name,    // очередь
-	//	"OUT ConSumer", //консумер
-	//	true,           //авто -акк
-	//	false,          //эксклюзив
-	//	false,          //не локально
-	//	false,          // не ждать
-	//	nil,            //args
-	//
-	//)
-	//errorLoger(err, "Failed to register a consumer")
-	forever := make(chan bool)
-	for d := range msgs {
-		log.Printf("Received a message: %s", d.Body)
+		fmt.Println("Successfully Connected to our RabbitMQ Instance")
+		fmt.Println(" [*] - Waiting for messages")
+		<-forever
 	}
-	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
-	<-forever
 }
