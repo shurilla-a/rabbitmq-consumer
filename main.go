@@ -9,9 +9,10 @@ import (
 	"os"
 	"runtime"
 	"strconv"
+	"time"
 )
 
-// функция обработки ошибок
+// error handling function
 func errorLoger(errLogreFile error, msgtoErrorLogerFile string) {
 	fileWrite, err := os.OpenFile("error.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
@@ -19,9 +20,10 @@ func errorLoger(errLogreFile error, msgtoErrorLogerFile string) {
 	}
 	log.SetOutput(fileWrite)
 	log.Fatalf("%s:%s", msgtoErrorLogerFile, errLogreFile)
+
 }
 
-//структура Конфига
+//Configuration structure
 type ConfigYmal struct {
 	Host          string `yaml:"host"`
 	Port          string `yaml:"port"`
@@ -32,11 +34,11 @@ type ConfigYmal struct {
 	QueueCount    int    `yaml:"queueCount"`
 }
 
-// функция парсинга Нфьд Файла
+// YAML File parsing function
 func inConfigParsingYmal(configFile string) (*ConfigYmal, error) {
 	configFileOpen, err := ioutil.ReadFile(configFile)
 	if err != nil {
-		errorLoger(err, " НЕ МОГУ НАЙТИ ФАЙЛ КОНФИГУРАЦИИ")
+		errorLoger(err, " NO KONFIG FILE")
 	}
 	c := &ConfigYmal{}
 	err = yaml.Unmarshal(configFileOpen, c)
@@ -60,16 +62,18 @@ func main() {
 	}
 	defer conn.Close()
 
-	ch, err := conn.Channel()
-	if err != nil {
-		errorLoger(err, "Failed to open a channel")
-	}
-	defer ch.Close()
 	for i := 1; i <= configReader.QueueCount; i++ {
+
+		ch, err := conn.Channel()
+		if err != nil {
+			errorLoger(err, "Failed to open a channel")
+		}
+		defer ch.Close()
 		queueName := configReader.QueueName + strconv.Itoa(i)
+		fmt.Println("try: " + queueName)
 		msgs, err := ch.Consume(
 			queueName,
-			"",
+			"test",
 			true,
 			false,
 			false,
@@ -78,19 +82,25 @@ func main() {
 		)
 
 		if err != nil {
-			errorLoger(err, "ВСЕ пропало!!")
+			errorLoger(err, "Failed to open a channel")
+			continue
 		}
-		fmt.Println(msgs)
-
-		forever := make(chan bool)
+		//forever := make(chan bool)
 		go func() {
 			for d := range msgs {
+
 				fmt.Printf("Recieved Message: %s\n", d.Body)
+
 			}
+
 		}()
 
 		fmt.Println("Successfully Connected to our RabbitMQ Instance")
 		fmt.Println(" [*] - Waiting for messages")
-		<-forever
+		//time.Sleep(time.Duration(200).Minutes)
+		//	close(forever)
+		//	<-forever
+
 	}
+	time.Sleep(20 * time.Minute)
 }
