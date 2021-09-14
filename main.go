@@ -19,7 +19,7 @@ func errorLoger(errLogreFile error, msgtoErrorLogerFile string) {
 		log.Fatalf("Error Open or Read errorLog.log File", err)
 	}
 	log.SetOutput(fileWrite)
-	log.Fatalf("%s:%s", msgtoErrorLogerFile, errLogreFile)
+	log.Printf("%s:%s", msgtoErrorLogerFile, errLogreFile)
 
 }
 
