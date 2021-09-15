@@ -38,7 +38,7 @@ type ConfigYmal struct {
 func inConfigParsingYmal(configFile string) (*ConfigYmal, error) {
 	configFileOpen, err := ioutil.ReadFile(configFile)
 	if err != nil {
-		errorLoger(err, " NO KONFIG FILE")
+		errorLoger(err, " NO CONFIG FILE")
 	}
 	c := &ConfigYmal{}
 	err = yaml.Unmarshal(configFileOpen, c)
@@ -70,7 +70,7 @@ func main() {
 		}
 		defer ch.Close()
 		queueName := configReader.QueueName + strconv.Itoa(i)
-		fmt.Println("try: " + queueName)
+		//fmt.Println("try: " + queueName)
 		msgs, err := ch.Consume(
 			queueName,
 			"test",
@@ -86,15 +86,15 @@ func main() {
 			continue
 		}
 		//forever := make(chan bool)
+		//i:=0
 		go func() {
-			for d := range msgs {
+			for range msgs {
 
-				fmt.Printf("Recieved Message: %s\n", d.Body)
-
+				time.Sleep(time.Second)
 			}
-
+			//fmt.Println("Считано " , i , " сообщений")
 		}()
-
+		//	fmt.Println("Считано " , i , " сообщений")
 		fmt.Println("Successfully Connected to our RabbitMQ Instance")
 		fmt.Println(" [*] - Waiting for messages")
 		//time.Sleep(time.Duration(200).Minutes)
